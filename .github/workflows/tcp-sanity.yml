@@ -98,6 +98,9 @@ jobs:
           echo "== container status =="
           docker ps -a --filter "name=${CNAME}" --no-trunc
 
+          echo "== loxilb process status =="
+          docker exec "${CNAME}" ps ax
+
           echo "== fixed log: ${FIXED_LOG} =="
           docker exec "${CNAME}" sh -lc "test -f '${FIXED_LOG}' && (tail -n 2000 '${FIXED_LOG}' || true) || echo 'missing: ${FIXED_LOG}'"
 
