@@ -85,3 +85,35 @@ jobs:
              ./validation.sh
              ./rmconfig.sh
              cd -
+      - name: Dump container logs (files)
+        if: failure()
+        run: |
+          set -euxo pipefail
+
+          CNAME=llb1                 
+          LOGDIR=/var/log               
+          FIXED_LOG=${LOGDIR}/loxilbdp.log 
+          DYN_GLOB="${LOGDIR}/loxilb[0-9a-f]*.log"
+
+          echo "== container status =="
+          docker ps -a --filter "name=${CNAME}" --no-trunc
+
+          echo "== fixed log: ${FIXED_LOG} =="
+          docker exec "${CNAME}" sh -lc "test -f '${FIXED_LOG}' && (tail -n 2000 '${FIXED_LOG}' || true) || echo 'missing: ${FIXED_LOG}'"
+
+          echo "== dynamic logs: ${DYN_GLOB} =="
+          docker exec "${CNAME}" sh -lc "
+            set -e
+            files=\$(ls -1 ${DYN_GLOB} 2>/dev/null || true)
+            if [ -z \"\$files\" ]; then
+              echo 'no dynamic logs matched'
+              exit 0
+            fi
+            for f in \$files; do
+              echo
+              echo '----- BEGIN '\"\$f\"' -----'
+              tail -n 2000 \"\$f\" || true
+              echo '----- END '\"\$f\"' -----'
+            done
+          "
+
