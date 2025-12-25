@@ -16,32 +16,40 @@ sleep 5
 
 $dexec llb1 ip addr add 10.10.10.3/32 dev lo
 
-sleep 10
-for i in {1..5}; do
-  echo "Attempting to create LB rule (attempt $i/5)..."
-  echo "llb1: loxicmd create lb 10.10.10.3 --tcp=2020:8080 --endpoints=10.10.10.3:1"
+sleep 5
+
+# Check if loxilb is running
+echo "Checking if loxilb is running..."
+if ! $dexec llb1 pgrep -f "/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
+  echo "loxilb is not running, starting manually..."
+  echo "Starting loxilb with output visible..."
   
-  # Try to create LB rule
-  if $dexec llb1 loxicmd create lb 10.10.10.3 --tcp=2020:8080 --endpoints=10.10.10.3:1; then
-    # Check if hook point exists
-    hook=$($dexec llb1 tc filter show dev eth0 ingress | grep tc_packet_func 2>/dev/null || true)
-    if [[ $hook == *"tc_packet_func"* ]]; then
-      echo "LB rule created successfully with hook point"
+  # Start loxilb in background but with output captured
+  $dexec llb1 /root/loxilb-io/loxilb/loxilb 2>&1 | tee /tmp/loxilb_manual.log &
+  LOXILB_PID=$!
+  
+  # Wait for loxilb to be ready (check for process)
+  echo "Waiting for loxilb to start..."
+  for i in {1..30}; do
+    if $dexec llb1 pgrep -f "/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
+      echo "loxilb started successfully (attempt $i)"
       break
-    else
-      echo "WARNING: LB rule created but no hook point found yet"
-      if [ $i -eq 5 ]; then
-        echo "ERROR: No hook point found after 5 attempts"
-        exit 1
-      fi
     fi
-  fi
+    if [ $i -eq 30 ]; then
+      echo "ERROR: loxilb failed to start after 30 seconds"
+      echo "== Process status =="
+      $dexec llb1 ps aux
+      echo "== Manual loxilb log =="
+      cat /tmp/loxilb_manual.log 2>/dev/null || echo "No log available"
+      exit 1
+    fi
+    sleep 1
+  done
   
-  if [ $i -lt 5 ]; then
-    echo "Attempt $i failed, retrying in 5 seconds..."
-    sleep 5
-  else
-    echo "Failed to create LB rule after 5 attempts"
-    exit 1
-  fi
-done
+  # Additional wait for API to be ready
+  sleep 5
+else
+  echo "loxilb is already running"
+fi
+
+create_lb_rule llb1 10.10.10.3 --tcp=2020:8080 --endpoints=10.10.10.3:1
