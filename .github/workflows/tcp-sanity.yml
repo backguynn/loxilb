@@ -101,8 +101,11 @@ jobs:
           echo "== loxilb process status =="
           docker exec "${CNAME}" ps ax
 
-          echo "== fixed log: ${FIXED_LOG} =="
-          docker exec "${CNAME}" sh -lc "test -f '${FIXED_LOG}' && (tail -n 2000 '${FIXED_LOG}' || true) || echo 'missing: ${FIXED_LOG}'"
+          echo "== loxicmd get lb =="
+          docker exec "${CNAME}" loxicmd get lb -o wide
+
+          echo "== tc filter show dev lo ingress =="
+          docker exec "${CNAME}" tc filter show dev lo ingress
 
           echo "== dynamic logs: ${DYN_GLOB} =="
           docker exec "${CNAME}" sh -lc "
