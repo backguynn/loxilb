@@ -52,4 +52,6 @@ else
   echo "loxilb is already running"
 fi
 
+sleep 30
+
 create_lb_rule llb1 10.10.10.3 --tcp=2020:8080 --endpoints=10.10.10.3:1
