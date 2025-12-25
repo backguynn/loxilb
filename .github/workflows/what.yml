@@ -1,4 +1,4 @@
-name: TCP-LB-Sanity-CI
+name: What-Sanity-CI
 
 on:
   push:
