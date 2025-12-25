@@ -20,7 +20,7 @@ sleep 30
 
 # Check if loxilb is running
 echo "Checking if loxilb is running..."
-if ! docker exec llb1 pgrep -f "/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
+if ! pgrep -f "/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
   echo "loxilb is not running, starting manually..."
   echo "Starting loxilb with output visible..."
   
