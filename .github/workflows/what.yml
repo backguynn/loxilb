@@ -63,7 +63,7 @@ jobs:
           docker exec "${CNAME}" loxicmd get lb -o wide
 
           echo "== tc filter show dev lo ingress =="
-          docker exec "${CNAME}" tc filter show dev lo ingress
+          docker exec "${CNAME}" tc filter show dev eth0 ingress
 
           echo "== dynamic logs: ${DYN_GLOB} =="
           docker exec "${CNAME}" sh -lc "
