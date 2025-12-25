@@ -19,7 +19,8 @@ $dexec llb1 ip addr add 10.10.10.3/32 dev lo
 sleep 10
 for i in {1..5}; do
   echo "Attempting to create LB rule (attempt $i/5)..."
-  if create_lb_rule llb1 10.10.10.3 --tcp=2020:8080 --endpoints=10.10.10.3:1; then
+  # Run create_lb_rule in a subshell to prevent exit from terminating the script
+  if ( create_lb_rule llb1 10.10.10.3 --tcp=2020:8080 --endpoints=10.10.10.3:1 ); then
     echo "LB rule created successfully"
     break
   fi
