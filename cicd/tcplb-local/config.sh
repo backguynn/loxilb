@@ -16,7 +16,7 @@ sleep 5
 
 $dexec llb1 ip addr add 10.10.10.3/32 dev lo
 
-sleep 5
+sleep 30
 
 # Check if loxilb is running
 echo "Checking if loxilb is running..."
