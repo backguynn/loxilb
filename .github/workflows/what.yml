@@ -53,6 +53,10 @@ jobs:
           FIXED_LOG=${LOGDIR}/loxilbdp.log 
           DYN_GLOB="${LOGDIR}/loxilb[0-9a-f]*.log"
 
+          echo "== ubuntu version =="
+          uname -a
+          cat /etc/issue
+
           echo "== container status =="
           docker ps -a --filter "name=${CNAME}" --no-trunc
 
