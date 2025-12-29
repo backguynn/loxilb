@@ -57,14 +57,14 @@ jobs:
           uname -a
           cat /etc/issue
 
+          echo "== check BTF support =="
+          sudo bpftool feature probe kernel | sed -n '1,200p'
+          
           echo "== check llb1's /opt/loxilb/cgroup =="
           docker exec "${CNAME}" ls /opt/loxilb/cgroup
 
           echo "== container status =="
           docker ps -a --filter "name=${CNAME}" --no-trunc
-
-          echo "== loxilb process status =="
-          docker exec "${CNAME}" ps ax
 
           echo "== loxicmd get lb =="
           docker exec "${CNAME}" loxicmd get lb -o wide
