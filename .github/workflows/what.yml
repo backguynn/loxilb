@@ -57,6 +57,9 @@ jobs:
           uname -a
           cat /etc/issue
 
+          echo "== check /opt/loxilb/cgroup =="
+          ls /opt/loxilb/cgroup
+
           echo "== container status =="
           docker ps -a --filter "name=${CNAME}" --no-trunc
 
