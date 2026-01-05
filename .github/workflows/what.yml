@@ -44,21 +44,6 @@ jobs:
       - run: |
              cd cicd/tcplbhash/
              ./config.sh
-             echo "== dynamic logs: ${DYN_GLOB} =="
-             docker exec "${CNAME}" sh -lc "
-               set -e
-               files=\$(ls -1 ${DYN_GLOB} 2>/dev/null || true)
-               if [ -z \"\$files\" ]; then
-                 echo 'no dynamic logs matched'
-                 exit 0
-               fi
-               for f in \$files; do
-                 echo
-                 echo '----- BEGIN '\"\$f\"' -----'
-                 tail -n 2000 \"\$f\" || true
-                 echo '----- END '\"\$f\"' -----'
-               done
-             "
              ./validation.sh
              ./rmconfig.sh
              cd -
