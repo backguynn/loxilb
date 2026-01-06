@@ -77,7 +77,7 @@ jobs:
 
           echo "== ip addr show lo =="
           docker exec "${CNAME}" ip addr show lo
-          ip netns exec "${CNAME}" ip addr show lo
+          sudo ip netns exec "${CNAME}" ip addr show lo
 
           echo "== dynamic logs: ${DYN_GLOB} =="
           docker exec "${CNAME}" sh -lc "
