@@ -7,7 +7,7 @@ echo "Spawning all hosts"
 echo "#########################################"
 
 #spawn_docker_host --dock-type loxilb --dock-name llb1 --docker-args "--pid=host --cgroupns=host -v /sys/fs/cgroup:/sys/fs/cgroup:rw" --extra-args "--localsockpolicy"
-spawn_docker_host --dock-type loxilb --dock-name llb1 --extra-args "--localsockpolicy"
+spawn_docker_host --dock-type loxilb --dock-name llb1 --docker-args "-v /sys/fs/cgroup:/sys/fs/cgroup:rw" --extra-args "--localsockpolicy"
 
 echo "#########################################"
 echo "Connecting and configuring  hosts"
