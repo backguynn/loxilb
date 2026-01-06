@@ -61,6 +61,11 @@ jobs:
           uname -a
           cat /etc/issue
 
+          echo "Checking Cgroup Type..."
+          stat -fc %T /sys/fs/cgroup/
+          echo "Checking Mounts..."
+          mount | grep cgroup
+
           echo "== container status =="
           docker ps -a --filter "name=${CNAME}" --no-trunc
 
