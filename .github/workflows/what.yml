@@ -64,6 +64,9 @@ jobs:
           echo "== container status =="
           docker ps -a --filter "name=${CNAME}" --no-trunc
 
+          echo "== docker exec -i llb1 pgrep =="
+          docker exec -i "${CNAME}" pgrep -afl "^/root/loxilb-io/loxilb/loxilb"
+
           echo "== loxicmd get lb =="
           docker exec "${CNAME}" loxicmd get lb -o wide
 
