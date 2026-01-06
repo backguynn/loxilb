@@ -20,18 +20,18 @@ sleep 30
 
 # Check if loxilb is running
 echo "Checking if loxilb is running..."
-if ! pgrep -f "/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
+if ! $dexec llb1 pgrep -f "^/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
   echo "loxilb is not running, starting manually..."
   echo "Starting loxilb with output visible..."
   
   # Start loxilb in background but with output captured
-  $dexec llb1 /root/loxilb-io/loxilb/loxilb 2>&1 | tee /tmp/loxilb_manual.log &
+  $dexec llb1 /root/loxilb-io/loxilb/loxilb --localsockpolicy 2>&1 | tee /tmp/loxilb_manual.log &
   LOXILB_PID=$!
   
   # Wait for loxilb to be ready (check for process)
   echo "Waiting for loxilb to start..."
   for i in {1..30}; do
-    if $dexec llb1 pgrep -f "/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
+    if $dexec llb1 pgrep -f "^/root/loxilb-io/loxilb/loxilb" > /dev/null 2>&1; then
       echo "loxilb started successfully (attempt $i)"
       break
     fi
