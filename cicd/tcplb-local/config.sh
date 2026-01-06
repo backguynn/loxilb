@@ -55,4 +55,6 @@ fi
 
 sleep 30
 
+$dexec llb1 ip addr show dev lo
+
 create_lb_rule llb1 10.10.10.3 --tcp=2020:8080 --endpoints=10.10.10.3:1
