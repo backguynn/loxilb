@@ -48,14 +48,14 @@ docker exec -d "$NAME" bash -c \
   '/root/loxilb-io/loxilb/loxilb > /tmp/loxilb.stdout 2> /tmp/loxilb.stderr; echo $? > /tmp/loxilb.exit'
 
 echo "== timeline (loxilb started at t+0)"
-if watch 60; then
-  echo "== still alive after 60s: add a veth port, as the cicd scenarios do"
+if watch 20; then
+  echo "== still alive after 20s: add a veth port, as the cicd scenarios do"
   pid="$(docker inspect -f '{{.State.Pid}}' "$NAME")"
   sudo ip link add dbgv0 type veth peer name dbgv1
   sudo ip link set dbgv1 netns "$pid"
   sudo nsenter -t "$pid" -n ip link set dbgv1 up
   sudo ip link set dbgv0 up
-  if watch 40; then
+  if watch 8; then
     echo "== still alive: create an LB rule"
     docker exec "$NAME" loxicmd create lb 20.20.20.1 --tcp=2020:8080 \
       --endpoints=31.31.31.1:1 2>&1 | cut -c1-300
@@ -63,6 +63,18 @@ if watch 60; then
     docker exec "$NAME" sh -c 'tc filter show dev dbgv1 ingress' 2>&1 | cut -c1-200
   fi
 fi
+
+echo "== verifier cost of the programs loxilb holds (fdinfo verified_insns)"
+docker exec "$NAME" bash -c '
+  for p in /proc/[0-9]*; do
+    [ "$(cat "$p/comm" 2>/dev/null)" = loxilb ] || continue
+    for f in "$p"/fdinfo/*; do
+      grep -q "^prog_id" "$f" 2>/dev/null || continue
+      grep -E "^prog_id|^prog_tag|^verified_insns" "$f" | tr "\n\t" "  "
+      echo
+    done
+  done | sort -u' | tee "$OUT/verified-insns.txt"
+docker exec "$NAME" sh -c 'bpftool prog show 2>&1 | grep -E "sched_cls|xdp"' | cut -c1-160 | tee "$OUT/progs.txt"
 
 echo "::group::collect"
 docker cp "$NAME:/tmp/loxilb.stderr" "$OUT/loxilb.stderr"
