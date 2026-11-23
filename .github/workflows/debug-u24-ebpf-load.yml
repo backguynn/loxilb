@@ -1,0 +1,51 @@
+name: Debug-U24-eBPF-Load
+# Temporary: find out why loxilb exits on the ubuntu-24.04 runner (kernel 7.0)
+# since the loxilb-ebpf bump in #1154. Not meant to be merged.
+on:
+  push:
+    branches: [ "debug/u24-ebpf-load" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: probe (${{ matrix.os }}, ${{ matrix.image.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-24.04, ubuntu-22.04 ]
+        image:
+          - name: latest
+            ref: ghcr.io/loxilb-io/loxilb:latest
+          # Last image built before #1154 (from 4fa515f0); may have been pruned
+          - name: pre-1154
+            ref: ghcr.io/loxilb-io/loxilb@sha256:5cd4a3e644ae68f2a5e79bbbf5a2a94c0e10e1dcf3c85407dae0401611d4191a
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Host facts
+        run: |
+          uname -a
+          echo "nproc=$(nproc) possible=$(cat /sys/devices/system/cpu/possible) online=$(cat /sys/devices/system/cpu/online)"
+          sudo sysctl kernel.unprivileged_bpf_disabled net.core.bpf_jit_enable net.core.bpf_jit_harden || true
+          cat /sys/kernel/security/lockdown 2>/dev/null || true
+          docker version --format 'docker {{.Server.Version}}'
+
+      - name: Pull image
+        run: docker pull "${{ matrix.image.ref }}"
+
+      - name: Probe
+        run: bash .github/debug/ebpf-load-probe.sh "${{ matrix.image.ref }}" "$RUNNER_TEMP/probe"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-${{ matrix.os }}-${{ matrix.image.name }}
+          path: ${{ runner.temp }}/probe
+          if-no-files-found: ignore
+          retention-days: 7
